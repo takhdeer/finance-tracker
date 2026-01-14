@@ -81,6 +81,29 @@ app.delete('/api/expenses/:id', async (req, res) => {
   
 });
 
+// UPADTE/EDIT expense
+app.put('/api/expenses/:id', async (req, res) => {
+  const {id} = req.params;
+  const { amount, category, merchant, date, notes } = req.body;
+
+  try { 
+    const result = await pool.query(
+    'UPDATE expenses SET amount = $1, category = $2, merchant = $3, date = $4, notes = $5 WHERE id = $6 RETURNING *',
+    [amount, category, merchant, date, notes, id]
+    );
+
+    if (result.rows.length === 0) { 
+      return res.status(404).json({error: 'Expense not found'});
+    }
+
+    res.json({message: 'Expense edited', expense: result.rows[0] });
+  } catch (err) { 
+    console.error(err);
+    res.status(500).json({ error: 'Server error'});
+  }
+
+});
+
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
