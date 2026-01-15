@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import axios, { mergeConfig } from 'axios';
+import axios from 'axios'
 
 function ExpenseList({ refreshTrigger }) {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingID, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ 
     amount: '',
     category: '',
@@ -101,30 +101,72 @@ function ExpenseList({ refreshTrigger }) {
         <div>
           {expenses.map(expense => (
             <div key={expense.id} style={styles.expenseCard}>
-              <div style={styles.expenseHeader}>
-                <span style={styles.amount}>${parseFloat(expense.amount).toFixed(2)}</span>
-                <span style={styles.category}>{expense.category}</span>
-              </div>
-              <div style={styles.expenseDetails}>
-                {expense.merchant && <div><strong>Merchant:</strong> {expense.merchant}</div>}
-                <div><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</div>
-                {expense.notes && <div><strong>Notes:</strong> {expense.notes}</div>}
-              </div>
-
-            {/* Adding delete button to front end */}
-            <button 
-            onClick={() => handleDelete (expense.id)}
-            style = {styles.deleteButton}
-            >
-                Delete
-            </button>
+              {editingId === expense.id ? (
+                // editing mode (editable form) 
+                <div>
+                  <h3 style={{ marginTop: 0 }}>Editing Expense</h3>
+                  <div style={styles.formGroup}>
+                    <label>Amount ($)</label> 
+                    <input
+                      type="number"
+                      name="amount"
+                      step="0.01"
+                      value={editForm.amount}
+                      onChange={handleEditFormChange}
+                      style={styles.input}
+                    />
+                  </div>
+                  <div style={styles.buttonGroup}>
+                    <button
+                      onClick={() => handleSaveEdit(expense.id)}
+                      style={styles.saveButton}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}  // FIXED: Removed (expense.id)
+                      style={styles.cancelButton}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Normal Mode
+                <div>
+                  <div style={styles.expenseHeader}>
+                    <span style={styles.amount}>${parseFloat(expense.amount).toFixed(2)}</span>
+                    <span style={styles.category}>{expense.category}</span>
+                  </div>
+                  <div style={styles.expenseDetails}>
+                    {expense.merchant && <div><strong>Merchant:</strong> {expense.merchant}</div>}
+                    <div><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</div>
+                    {expense.notes && <div><strong>Notes:</strong> {expense.notes}</div>}
+                  </div>
+                  <div style={styles.buttonGroup}>
+                    <button
+                      onClick={() => handleEditClick(expense)}
+                      style={styles.editButton}
+                    >
+                      Edit Amount
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(expense.id)}
+                      style={styles.deleteButton}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-        ))}
+          ))}
         </div>
       )}
     </div>
   );
-}
+}     
+
 
 const styles = {
   container: {
@@ -163,6 +205,22 @@ const styles = {
     fontSize: '14px',
     color: '#666'
   },
+  buttonGroup: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '10px'
+  },
+  editButton: {
+    padding: '8px 16px',
+    backgroundColor: '#2196F3',  // Blue
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    flex: 1
+  },
   deleteButton: {
     padding: '8px 16px', 
     backgroundColor: '#f44336', // Red
@@ -172,6 +230,39 @@ const styles = {
     cursor: 'pointer', 
     fontSize: '14px',
     fontWeight: 'bold',
+  },
+  saveButton: {
+    padding: '8px 16px',
+    backgroundColor: '#4CAF50',  // Green
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    flex: 1
+  },
+  cancelButton: {
+    padding: '8px 16px',
+    backgroundColor: '#757575',  // Gray
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    flex: 1
+  },
+  formGroup: {
+    marginBottom: '12px'
+  },
+  input: {
+    width: '100%',
+    padding: '8px',
+    fontSize: '14px',
+    borderRadius: '4px',
+    border: '1px solid #ccc',
+    boxSizing: 'border-box'
   }
 };
 
