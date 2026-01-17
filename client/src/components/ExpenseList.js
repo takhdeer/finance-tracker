@@ -191,93 +191,103 @@ const styles = {
     padding: '20px'
   },
   expenseCard: {
-    padding: '15px',
-    marginBottom: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    backgroundColor: 'white'
+    padding: '20px',
+    marginBottom: '15px',
+    border: '1px solid #e0e0e0',
+    borderRadius: '12px',
+    backgroundColor: 'white',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.08',
+    transition: 'box-shadow 0.2s'
   },
   expenseHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '10px',
-    borderBottom: '1px solid #eee',
-    paddingBottom: '10px'
+    marginBottom: '12px',
+    borderBottom: '2px solid #f0f0f0',
+    paddingBottom: '12px'
   },
   amount: {
-    fontSize: '24px',
+    fontSize: '28px',
     fontWeight: 'bold',
-    color: '#333'
+    color: '#2c3e50'
   },
   category: {
-    padding: '4px 12px',
+    padding: '6px 14px',
     backgroundColor: '#e3f2fd',
-    borderRadius: '12px',
-    fontSize: '14px',
-    color: '#1976d2'
+    borderRadius: '20px',
+    fontSize: '13px',
+    color: '#1976d2',
+    fontWeight: '600'
   },
   expenseDetails: {
     fontSize: '14px',
-    color: '#666'
+    color: '#666',
+    marginBottom: '12px',
+    lineHeight: '1.6'
   },
   buttonGroup: {
     display: 'flex',
     gap: '10px',
-    marginTop: '10px'
+    marginTop: '12px'
   },
   editButton: {
-    padding: '8px 16px',
+    padding: '10px 18px',
     backgroundColor: '#2196F3',  // Blue
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: 'bold',
-    flex: 1
+    flex: 1,
+    transition: 'background-color 0.2s'
   },
   deleteButton: {
-    padding: '8px 16px', 
+    padding: '10px 18px', 
     backgroundColor: '#f44336', // Red
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer', 
     fontSize: '14px',
     fontWeight: 'bold',
+    flex: 1,
+    transition: 'background-color 0.2s'
   },
   saveButton: {
-    padding: '8px 16px',
+    padding: '10px 18px',
     backgroundColor: '#4CAF50',  // Green
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: 'bold',
-    flex: 1
+    flex: 1,
+    transition: 'background-color 0.2s'
   },
   cancelButton: {
-    padding: '8px 16px',
+    padding: '10px 18px',
     backgroundColor: '#757575',  // Gray
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: 'bold',
-    flex: 1
+    flex: 1,
+    transition: 'background-color 0.2s'
   },
   formGroup: {
-    marginBottom: '12px'
+    marginBottom: '15px'
   },
   input: {
     width: '100%',
-    padding: '8px',
+    padding: '10px 12px',
     fontSize: '14px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
+    borderRadius: '6px',
+    border: '1px solid #ddd',
     boxSizing: 'border-box'
   }
 };

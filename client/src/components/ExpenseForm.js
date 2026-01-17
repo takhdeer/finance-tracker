@@ -116,40 +116,45 @@ const styles = {
   form: {
     maxWidth: '500px',
     margin: '20px auto',
-    padding: '20px',
+    padding: '25px',
     border: '1px solid #ddd',
-    borderRadius: '8px',
-    backgroundColor: '#f9f9f9'
+    borderRadius: '12px',
+    backgroundColor: '#ffffff',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
   },
   formGroup: {
-    marginBottom: '15px'
+    marginBottom: '18px'
   },
   input: {
     width: '100%',
-    padding: '8px',
-    fontSize: '14px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    boxSizing: 'border-box'
+    padding: '10px 12px',
+    fontSize: '15px',
+    borderRadius: '6px',
+    border: '1px solid #ddd',
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s'
   },
   textarea: {
     width: '100%',
-    padding: '8px',
-    fontSize: '14px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    minHeight: '60px',
-    boxSizing: 'border-box'
+    padding: '10px 12px',
+    fontSize: '15px',
+    borderRadius: '6px',
+    border: '1px solid #ddd',
+    minHeight: '80px',
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s',
+    fontFamily: 'inherit'
   },
   button: {
     width: '100%',
-    padding: '10px',
+    padding: '12px',
     backgroundColor: '#4CAF50',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     fontSize: '16px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
   }
 };
 

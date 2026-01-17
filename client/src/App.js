@@ -25,8 +25,9 @@ const styles = {
   header: {
     backgroundColor: '#4CAF50',
     color: 'white',
-    padding: '20px',
-    textAlign: 'center'
+    padding: ' 30px 20px',
+    textAlign: 'center',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
   }
 };
 
