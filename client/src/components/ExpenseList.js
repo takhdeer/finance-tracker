@@ -51,7 +51,7 @@ function ExpenseList({ refreshTrigger }) {
     setEditForm({
       amount: expense.amount,
       category: expense.category,
-      merchant: expense.merchant,
+      merchant: expense.merchant || '',
       date: typeof expense.date === 'string' ? expense.date.split('T')[0] : expense.date,
       notes: expense.notes || ''
     });
@@ -70,9 +70,25 @@ function ExpenseList({ refreshTrigger }) {
 
   const handleSaveEdit = async (id) => { 
     try { 
-      const response = await axios.put(`http://localhost:3001/api/expenses/${id}`, editForm);
+      const originalExpense = expenses.find(e => e.id === id);
+      console.log('Original Expenses:', originalExpense)
+      console.log('Edit form:', editForm)
+
+      const updateData = {
+        amount: editForm.amount,
+        category: originalExpense.category,
+        merchant: originalExpense.merchant || '',
+        date: originalExpense.date,
+        notes: originalExpense.notes || ''
+
+      };
+
+      console.log('Sending this data:', updateData);
+
+      const response = await axios.put(`http://localhost:3001/api/expenses/${id}`, updateData);
+      console.log('Recieved from server', response.data)
     setExpenses(expenses.map(expense => 
-      expense.id === id ? response.data : expense
+      expense.id === id ? response.data.expense : expense
     ));
     setEditingId(null);
     alert('Expense updated successfully!');
