@@ -127,7 +127,7 @@ function ExpenseList({ refreshTrigger }) {
             <div key={expense.id} style={styles.expenseCard}>
               {editingId === expense.id ? (
                 // editing mode (editable form) 
-                <div>
+                <div style = {styles.formGroup}>
                   <h3 style={{ marginTop: 0 }}>Editing Expense</h3>
                   <div style={styles.formGroup}>
                     <label>Amount ($)</label> 
@@ -140,6 +140,57 @@ function ExpenseList({ refreshTrigger }) {
                       style={styles.input}
                     />
                   </div>
+                  
+                  <div style = {styles.formGroup}>
+                    <label style = {styles.label}>Category</label>
+                    <select 
+                      name ="category"
+                      value = {editForm.category}
+                      onChange= {handleEditFormChange}
+                      style = {styles.input}
+                    >
+                      <option value="Food">Food</option>
+                      <option value="Transport">Transport</option>
+                      <option value="Shopping">Shopping</option>
+                      <option value="Bills">Bills</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div style = {styles.formGroup}>
+                    <label style = {styles.label}>Merchant</label>
+                    <input
+                      type = "text" 
+                      name = "merchant"
+                      value = {editForm.merchant}
+                      onChange = {handleEditFormChange}
+                      style = {styles.input}
+                    />
+                  </div>
+
+                  <div style = {styles.formGroup}>
+                    <label style = {styles.label}>Date</label>
+                    <input
+                      type = "date"
+                      name = "date"
+                      value = {editForm.date}
+                      onChange = {handleEditFormChange}
+                      style = {styles.input}
+                    />
+                  </div>
+
+                  <div style = {styles.formGroup}>
+                    <label style = {styles.label}>Notes</label>
+                    <input
+                      name = "notes"
+                      value = {editForm.notes}
+                      onChange = {handleEditFormChange}
+                      placeholder = "Additional details..."
+                      style = {styles.input}
+                    />
+                  </div>
+
                   <div style={styles.buttonGroup}>
                     <button
                       onClick={() => handleSaveEdit(expense.id)}
@@ -172,7 +223,7 @@ function ExpenseList({ refreshTrigger }) {
                       onClick={() => handleEditClick(expense)}
                       style={styles.editButton}
                     >
-                      Edit Amount
+                      Edit Details
                     </button>
                     <button 
                       onClick={() => handleDelete(expense.id)}
