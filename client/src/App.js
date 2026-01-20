@@ -1,13 +1,22 @@
 import { useState } from 'react';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
+import ReceiptScanner from './components/ReceiptScanner';
 import './App.css';
 
 function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [scannedData, setScannedData] = useState(null);
 
   const handleExpenseAdded = () => {
     setRefreshTrigger(prev => prev + 1);
+    setScannedData(null);
+  };
+
+  const handleReceiptScanned = (data) => {
+    setScannedData(data);
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth'});
   };
 
   return (
@@ -15,7 +24,12 @@ function App() {
       <header style={styles.header}>
         <h1>💰 Finance Tracker</h1>
       </header>
-      <ExpenseForm onExpenseAdded={handleExpenseAdded} />
+
+      <ReceiptScanner onReceiptScanned={handleReceiptScanned} />
+      <ExpenseForm 
+        onExpenseAdded={handleExpenseAdded} 
+        initialData = {scannedData}
+      />
       <ExpenseList refreshTrigger={refreshTrigger} />
     </div>
   );

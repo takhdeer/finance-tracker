@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
+import axios, { mergeConfig } from 'axios';
 
-function ExpenseForm({ onExpenseAdded }) {
+function ExpenseForm({ onExpenseAdded, initialData }) {
   const [formData, setFormData] = useState({
     amount: '',
     category: 'Food',
@@ -9,6 +9,18 @@ function ExpenseForm({ onExpenseAdded }) {
     date: new Date().toISOString().split('T')[0],
     notes: ''
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        amount: initialData.amount || '',
+        category: initialData.category || 'Food',
+        merchant: initialData.merchant || '',
+        date: initialData.date || new Date().toISOString().split('T')[0],
+        notes: initialData.notes || ''
+      });
+    }
+  }, [initialData]);
 
   const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Other'];
 
