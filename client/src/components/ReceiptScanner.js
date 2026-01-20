@@ -8,7 +8,17 @@ function ReceiptScanner({ onReceiptScanned }) {
 
     const handleImageUpload = async (event) => {
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file) {
+            console.log('No file selected')
+            return;
+        }
+
+        console.log('File selected', file.name, file.type, file.size);
+
+        if (!file.type.startsWith('image/')) {
+            alert('Please scelect an image file')
+            return;
+        }
 
         // OCR processing
         setIsProcessing(true);
@@ -18,52 +28,53 @@ function ReceiptScanner({ onReceiptScanned }) {
         const reader = new FileReader();
 
         reader.onload = async (e) => {
+            console.log('File loaded, starting OCR...');
             const imageData = e.target.result;
             setPreviewImage(imageData);
-        }
 
-        try {
-            const result = await Tesseract.recognize(
-                URL.createObjectURL(file),
-                'eng',
-                {
-                    logger: (m) => {
-                        if (m.status === 'recognizing text') {
-                            setProgress(Math.round(m.progress * 100));
+            try {
+                const result = await Tesseract.recognize(
+                    imageData,
+                    'eng',
+                    {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                setProgress(Math.round(m.progress * 100));
+                            }
                         }
                     }
+                );
+
+                const extractedText = result.data.text;
+                console.log('Extracted text', extractedText)
+                
+                //Parse the text to extract data
+                const parsedData = parseReceiptText(extractedText);
+                console.log('Parsed data:', parsedData);
+
+                // Data sent back to parent component
+                if (onReceiptScanned) {
+                    onReceiptScanned(parsedData);
                 }
-            );
 
-            const extractedText = result.data.text;
-            console.log('Extracted text', extractedText)
-            
-            //Parse the text to extract data
-            const parsedData = parseReceiptText(extractedText);
-            console.log('Parsed data:', parsedData);
-
-            // Data sent back to parent component
-            if (onReceiptScanned) {
-                onReceiptScanned(parsedData);
+                alert('Reciept scanned sucessfully');
+            }   catch (error) { 
+                console.error('OCR Error:', error);
+                alert('Failed to scan receipt. Please try again.');
+            }   finally {
+                setIsProcessing(false);
+                setProgress(0);
+                setPreviewImage(null);
             }
+        };
 
-            alert('Reciept scanned sucessfully');
-        }   catch (error) { 
-            console.error('OCR Error:', error);
-            alert('Failed to scan receipt. Please try again.');
-        }   finally {
+        reader.onerror = () => {
+            alert('failed to ead image file');
             setIsProcessing(false);
-            setProgress(0);
-            setPreviewImage(null);
-        }
+        };
+    
+        reader.readAsDataURL(file);
     };
-
-    reader.onerror = () => {
-        alert('failed to ead image file');
-        setIsProcessing(false);
-    };
-
-    reader.readAsDataURL(file);
 
 
     const parseReceiptText = (text) => {
@@ -72,7 +83,7 @@ function ReceiptScanner({ onReceiptScanned }) {
 
         let amount = '';
         let merchant = '';
-        let data = '';
+        let date = '';
 
         // finding amount
         for (let line of lines) { 
@@ -83,23 +94,23 @@ function ReceiptScanner({ onReceiptScanned }) {
         }
 
         //empty line is usually merchant
-        if (lines.line > 0) { 
+        if (lines.length > 0) { 
             merchant = lines[0];
         }
 
         // finding date 
         for (let line of lines) { 
             const dateMatch = line.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/)       // line match from claude AI
-            if (dateMatch && !Date) { 
-                Date = dateMatch[0];
+            if (dateMatch && !date) { 
+                date = dateMatch[0];
                 // convert to yyyy-mm-dd 
-                const parts = Date.split(/[\/\-]/);
+                const parts = date.split(/[\/\-]/);
                 if (parts.length === 3) {
                     const month = parts[0].padStart(2, '0');
                     const day = parts[1].padStart(2, '0');
                     let year = parts[2];
                     if (year.length === 2) year = '20' + year;
-                    Date = `${year}-${month}-${day}`;
+                    date = `${year}-${month}-${day}`;
                 }
             }
         }
@@ -107,7 +118,7 @@ function ReceiptScanner({ onReceiptScanned }) {
         return {
             amount: amount || '',
             merchant: merchant || '',
-            date: data || new Date().toISOString().split('T')[0],
+            date: date || new date().toISOString().split('T')[0],
             category: 'Other',
             notes: 'Scanned from receipt'
         };
@@ -147,7 +158,7 @@ function ReceiptScanner({ onReceiptScanned }) {
 };
 
 const styles = {
-    Container: {
+    container: {
         maxWidth: '500px',
         margin: '20px auto',
         padding: '20px',
