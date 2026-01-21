@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios'
 
-function ExpenseList({ refreshTrigger }) {
+function ExpenseList({ refreshTrigger, onExpensesLoaded }) {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -19,6 +19,10 @@ function ExpenseList({ refreshTrigger }) {
       const response = await axios.get('http://localhost:3001/api/expenses');
       setExpenses(response.data);
       setLoading(false);
+
+      if (onExpensesLoaded) {
+        onExpensesLoaded(response.data);
+      }
     } catch (error) {
       console.error('Error fetching expenses:', error);
       setLoading(false);

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
 import ReceiptScanner from './components/ReceiptScanner';
+import SpendingCharts from './components/SpendingCharts';
 import './App.css';
 
 function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [scannedData, setScannedData] = useState(null);
+  const [expenses, setExpenses] = useState([]);
 
   const handleExpenseAdded = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -30,7 +32,12 @@ function App() {
         onExpenseAdded={handleExpenseAdded} 
         initialData = {scannedData}
       />
-      <ExpenseList refreshTrigger={refreshTrigger} />
+      <ExpenseList 
+        refreshTrigger={refreshTrigger} 
+        onExpensesLoaded = {setExpenses}
+      />
+
+      <SpendingCharts expenses={expenses} />
     </div>
   );
 }
