@@ -113,10 +113,17 @@ function ExpenseList({ refreshTrigger }) {
       <h2>Your Expenses</h2>
       {expenses.length > 0 && (
         <div style ={styles.totalBox}>
-          <span style = {styles.totalLabel}> Total Spent:</span>
-          <span style = {styles.totalAmount}>
-            ${expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0).toFixed(2)}
-          </span>
+          <div>
+            <span style = {styles.totalLabel}> Total Spent:</span>
+            <span style = {styles.totalAmount}>
+              ${expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0).toFixed(2)}
+            </span>
+          </div>
+          <div style = {{textAlign: 'right'}}>
+            <span style = {styles.totalLabel}>Average Spent:</span>
+            <span style = {styles.totalAmount}>
+              ${(expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0) / expenses.length).toFixed(1)}            </span>
+          </div>
         </div>
       )}
       {expenses.length === 0 ? (
@@ -210,7 +217,7 @@ function ExpenseList({ refreshTrigger }) {
                 // Normal Mode
                 <div>
                   <div style={styles.expenseHeader}>
-                    <span style={styles.amount}>${parseFloat(expense.amount).toFixed(2)}</span>
+                    <span style={styles.amount}>${parseFloat(expense.amount).toFixed(1)}</span>
                     <span style={styles.category}>{expense.category}</span>
                   </div>
                   <div style={styles.expenseDetails}>
@@ -355,9 +362,9 @@ const styles = {
     padding: '20px',
     borderRadius: '12px',
     marginTop: '20px',
-    display: "felx",
+    display: "flex",
     justifyContent: 'space-between',
-    alignItems: "centre",
+    alignItems: "center",
     border: '2px solid #4CAF50'
   },
   totalLabel: {
@@ -368,8 +375,9 @@ const styles = {
   totalAmount: {
     fontSize: '32px',
     fontWeight: 'bold',
-    color: '#1b5e20'
-  }
+    color: '#1b5e20',
+    display: 'block'
+  },
 }
 
 export default ExpenseList;
