@@ -5,6 +5,9 @@ function ReceiptScanner({ onReceiptScanned }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [previewImage, setPreviewImage] = useState(null);
+    const [showReview, setShowReview] = useState(false);
+    const [reviewData, setReviewData] = useState(null);
+    const [extractedText, setExtractedText] = useState('');
 
     const handleImageUpload = async (event) => {
         const file = event.target.files[0];
@@ -54,7 +57,10 @@ function ReceiptScanner({ onReceiptScanned }) {
 
                 // Data sent back to parent component
                 if (onReceiptScanned) {
-                    onReceiptScanned(parsedData);
+                    setReviewData(parsedData);
+                    setExtractedText(extractedText);
+                    setShowReview(true);
+
                 }
 
                 alert('Receipt scanned sucessfully');
@@ -64,7 +70,6 @@ function ReceiptScanner({ onReceiptScanned }) {
             }   finally {
                 setIsProcessing(false);
                 setProgress(0);
-                setPreviewImage(null);
             }
         };
 
@@ -207,33 +212,159 @@ function ReceiptScanner({ onReceiptScanned }) {
                 return null;
             }
     };
+
+    const handleConfirmScan = () => {
+        // Send reviewed data to parent
+        if (onReceiptScanned) {
+            onReceiptScanned(reviewData)
+        }
+
+        // Reset 
+        setShowReview(false);
+        setReviewData(null);
+        setExtractedText('');
+        setPreviewImage(null);
+        alert('Receipt data added to form!');
+    };
+
+    const handleCancelScan = () => {
+        //Discard and reset
+        setShowReview(false);
+        setReviewData(null);
+        setExtractedText('');
+        setPreviewImage(null);
+    };
+
+    const handleReviewChange = (field, value) => {
+        setReviewData({
+            ...reviewData,
+            [field]: value
+        });
+    };
+
     return (
         <div style = {styles.container}>
             <h3>Scan Receipt</h3>
 
-            <input
-                type = "file"
-                accept = "image/*"
-                capture = "environment"
-                onChange = {handleImageUpload}
-                style = {styles.fileInput}
-                id= "receipt-upload"
-                disabled={isProcessing}
-            />
+            {!showReview ? (
+                <>
+                    <input
+                        type = "file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleImageUpload}
+                        style={styles.fileInput}
+                        id="receipt-upload"
+                        disabled={isProcessing}
+                    />
 
-            <label htmlFor="receipt-upload" style={styles.uploadButton}>
-                {isProcessing ?`Processing... ${progress}%` : '📷 Take Photo or Upload Receipt'}
-            </label>
+                    <label htmlFor="receipt-upload" style={styles.uploadButton}>
+                        {isProcessing ? `Processing... ${progress}%` : '📷 Take Photo or Upload Receipt'}
+                    </label>
 
-            {previewImage && (
-                <div style={styles.preview}>
-                <img src={previewImage} alt="Receipt preview" style={styles.previewImage} />
-                </div>
-            )}
+                    {previewImage && !isProcessing && (
+                        <div style={styles.preview}>
+                            <img src={previewImage} alt="Receipt preview" style={styles.previewImage} />
+                        </div>
+                    )}
 
-            {isProcessing && (
-                <div style={styles.progressBar}>
-                    <div style={{...styles.progressFill, width: `${progress}%`}}></div>
+                    {isProcessing && (
+                        <div style = {styles.progressBar}>
+                            <div style={{...styles.progressFill, width: `${progress}%`}}></div>
+                        </div>
+                    )}
+                </>
+            ) : (
+                // Review view
+                <div style = {styles.reviewContainer}>
+                    <h4 style = {{marginTop: 0, color: '#2196F3'}}>Review Scanned Data </h4>
+
+                    {previewImage && (
+                        <div style={styles.reviewPreview}>
+                            <img src={previewImage} alt="Receipt" style={styles.reviewImage} />
+                        </div>
+                    )}
+                    <div style = {styles.reviewForm}>
+                        <div style = {styles.formGroup}>
+                            <label style={styles.label}>Amount ($)</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={reviewData.amount}
+                                onChange={(e) => handleReviewChange('amount', e.target.value)}
+                                style={styles.input}
+                            />
+                        </div>
+                        
+                        <div style= {styles.formGroup}>
+                            <label style = {styles.label}>Merchant</label>
+                            <input
+                                type = "text"
+                                value = {reviewData.merchant}
+                                onChange={(e) => handleReviewChange('merchant', e.target.value)}
+                                style = {styles.input}
+                            />
+                        </div>
+
+                        <div style = {styles.formGroup}>
+                            <label style={styles.label}>Date</label>
+                            <input
+                                type="date"
+                                value={reviewData.date}
+                                onChange={(e) => handleReviewChange('date', e.target.value)}
+                                style={styles.input}
+                            />
+                        </div>
+
+                        <div style = {styles.formGroup}>
+                            <label style = {styles.label}>Category</label>
+                            <select 
+                                value={reviewData.category}
+                                onChange={(e) => handleReviewChange('category', e.target.value)}
+                                style={styles.input}
+                            >
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Bills">Bills</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Other">Other</option> 
+                            </select>
+                        </div>
+
+                        <div style = {styles.formGroup}>
+                            <label style = {styles.label}>Notes</label>
+                            <textarea
+                                value={reviewData.notes}
+                                onChange = {(e) => handleReviewChange('notes', e.target.value)}
+                                style = {styles.textarea}
+                            />
+                        </div>
+                    </div>
+
+                    {/* raw OCR text for debugging */}
+                    <details style = {{marginTop: '25px', fontSize: '12px', color: '#666'}}>
+                        <summary style = {{cursor: 'pointer'}}>Show raw OCR text</summary>
+                        <pre style= {{
+                            backgroundColor: '#f5f5f5',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            overflow: 'auto',
+                            maxHeight: '150px',
+                            fontSize: '11px'
+                        }}>
+                            {extractedText}
+                        </pre>
+                    </details>
+
+                    <div style = {styles.reviewButtons}>
+                        <button onClick={handleConfirmScan} style = {styles.confirmButton}>
+                            ✓ Confirm & Add
+                        </button>
+                        <button onClick = {handleCancelScan} style = {styles.cancelButton}>
+                            ✗ Cancel
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
@@ -266,6 +397,9 @@ const styles = {
         cursor: 'pointer',
         marginTop: '10px'
     },
+    formGroup: {
+        marginBottom: '25px',
+    },
     preview: {
         marginTop: '20px'
     },
@@ -287,7 +421,73 @@ const styles = {
         height: '100%',
         backgroundColor: '#4CAF50',
         transition: 'width 0.3s ease'
-    }   
+    },
+
+    reviewContainer: {
+        textAlign: 'left'
+    },
+    reviewPreview: {
+        marginBottom: '15px',
+        textAlign: 'center'
+    },
+    reviewImage: {
+        maxWidth: '200px',
+        maxHeight: '150px',
+        borderRadius: '8px',
+        border: '2px solid #ddd'
+    },
+    reviewForm: {
+        marginTop: '15px',
+        paddingLeft: '15px'
+    },
+    label: {
+        display: 'block',
+        marginBottom: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#333'
+    },
+    textarea: {
+        width: '100%',
+        padding: '10px',
+        fontSize: '14px',
+        borderRadius: '6px',
+        border: '1px solid #ddd',
+        minHeight: '60px',
+        boxSizing: 'border-box',
+        fontFamily: 'inherit',
+
+    },
+    input: {
+        textAlign: 'center'
+    },
+    reviewButtons: {
+        display: 'flex',
+        gap: '10px',
+        marginTop: '20px'
+    },
+    confirmButton: {
+        flex: 1,
+        padding: '12px',
+        backgroundColor: '#4CAF50',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        cursor: 'pointer'
+    },
+    cancelButton: {
+        flex: 1,
+        padding: '12px',
+        backgroundColor: '#f44336',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        cursor: 'pointer'
+    }
 };
 
 export default ReceiptScanner;
