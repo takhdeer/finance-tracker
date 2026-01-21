@@ -16,7 +16,7 @@ function ReceiptScanner({ onReceiptScanned }) {
         console.log('File selected', file.name, file.type, file.size);
 
         if (!file.type.startsWith('image/')) {
-            alert('Please scelect an image file')
+            alert('Please select an image file')
             return;
         }
 
@@ -57,7 +57,7 @@ function ReceiptScanner({ onReceiptScanned }) {
                     onReceiptScanned(parsedData);
                 }
 
-                alert('Reciept scanned sucessfully');
+                alert('Receipt scanned sucessfully');
             }   catch (error) { 
                 console.error('OCR Error:', error);
                 alert('Failed to scan receipt. Please try again.');
@@ -69,7 +69,7 @@ function ReceiptScanner({ onReceiptScanned }) {
         };
 
         reader.onerror = () => {
-            alert('failed to ead image file');
+            alert('Failed to read image file');
             setIsProcessing(false);
         };
     
@@ -85,53 +85,136 @@ function ReceiptScanner({ onReceiptScanned }) {
         let merchant = '';
         let date = '';
 
-        // finding amount
-        for (let line of lines) { 
-            const amountMatch = line.match(/\$?\d+\.\d{2}/);        // line match from claude AI
-            if (amountMatch && !amount) {
-                amount = amountMatch[0].replace('$', '');
-            }
-        }
+        // finding amount imporoved (with total, amount due, etc)
+        const totalKeywords = ['total', 'amount due', 'balance', 'grand total', 'subtotal'];
+        let foundTotal = false;
 
-        //empty line is usually merchant
-        if (lines.length > 0) { 
-            merchant = lines[0];
-        }
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].toLowerCase();
 
-        // finding date 
-        for (let line of lines) { 
-            const dateMatch = line.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/)       // line match from claude AI
-            if (dateMatch && !date) { 
-                date = dateMatch[0];
-                // convert to yyyy-mm-dd 
-                const parts = date.split(/[\/\-]/);
-                if (parts.length === 3) {
-                    const month = parts[0].padStart(2, '0');
-                    const day = parts[1].padStart(2, '0');
-                    let year = parts[2];
-                    if (year.length === 2) year = '20' + year;
-                    date = `${year}-${month}-${day}`;
+            const hasKeyword = totalKeywords.some(keyword => line.includes(keyword));
+
+            if (hasKeyword || foundTotal) {
+                // look for amouunt pattern in that or the next line
+                const amountMatch = lines[i].match(/\$?\s*(\d+\.\d{2})/);
+                if (amountMatch) {
+                    amount = amountMatch[1];
+                    foundTotal = true;
+                    break;
+                }
+
+                if (i + 1 <lines.length) {
+                    const nextMatch = lines[i + 1].match(/\$?\s*(\d+\.\d{2})/);
+                    if (nextMatch) {
+                        amount = nextMatch[1];
+                        break;
+                    }
                 }
             }
+        }
+
+        // if no amount found, get largest amount
+        if (!amount) {
+            const amounts = [];
+            for (let line of lines) {
+                const matches = line.match(/\$?\s*(\d+\.\d{2})/g);
+                if (matches) {
+                    matches.forEach(match => {
+                        const num = parseFloat(match.replace('$', '').trim());
+                        if (num >0) amounts.push(num);
+                    });
+                }
+            }
+            if (amounts.length > 0) {
+                amount = Math.max(...amounts).toFixed(2);
+            }
+        }
+
+        // Skip lines that are just numbers, dates, or very short
+        for (let line of lines) {
+            if (line.length >= 3 && 
+                !line.match(/^\d+$/) && 
+                !line.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/) &&
+                !line.match(/^\$?\d+\.\d{2}$/)) {
+                    merchant = line;
+                    break;
+            }
+        }
+
+        // finding date in multiple formats
+        const datePatterns = [
+            /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/,  // MM/DD/YYYY or MM-DD-YYYY
+            /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,    // YYYY/MM/DD
+            /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}/i  // Jan 15, 2024
+        ];
+
+        for (let line of lines) {
+            for (let pattern of datePatterns) {
+                const dateMatch = line.match(pattern)
+                if (dateMatch && !date) {
+                    const dateStr = dateMatch[0];
+                    date = parseDate(dateStr);
+                    if (date) break;
+                }
+            }
+            if (date) break;
         }
 
         return {
             amount: amount || '',
             merchant: merchant || '',
-            date: date || new date().toISOString().split('T')[0],
+            date: date || new Date().toISOString().split('T')[0],
             category: 'Other',
             notes: 'Scanned from receipt'
         };
     };
 
+    const parseDate = (dateStr) => {
+        try {
+            // Try MM/DD/YYYY or MM-DD-YYYY
+            let match = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+            if (match) {
+                let month = match[1].padStart(2, '0');
+                let day = match[2].padStart(2, '0');
+                let year = match[3];
+                if (year.length === 2) year = '20' + year;
+                return `${year}-${month}-${day}`;
+            }
+        
+            // Try YYYY/MM/DD
+            match = dateStr.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+            if (match) {
+                let year = match[1];
+                let month = match[2].padStart(2, '0');
+                let day = match[3].padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            const months = {
+                jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+                jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12'
+            };
+            match = dateStr.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(\d{4})/i);
+            if (match) {
+                const month = months[match[1].toLowerCase().substring(0, 3)];
+                const day = match[2].padStart(2, '0');
+                const year = match[3];
+                return `${year}-${month}-${day}`;
+            }
+
+            return null;
+        }   catch (e) {
+                return null;
+            }
+    };
     return (
         <div style = {styles.container}>
-            <h3>Scan Reciept</h3>
+            <h3>Scan Receipt</h3>
 
             <input
                 type = "file"
                 accept = "image/*"
-                capture = "enviroment"
+                capture = "environment"
                 onChange = {handleImageUpload}
                 style = {styles.fileInput}
                 id= "receipt-upload"
